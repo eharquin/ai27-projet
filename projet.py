@@ -2,7 +2,7 @@
 """
 Created on Thu Jun 10 12:27:31 2021
 
-@author: benja
+@author: benjam
 """
 
 """requin=1 tigre=2 crocodile=3 rien=4
@@ -25,7 +25,6 @@ def creationGrille(nbcol: int, nblig: int):
                     
     return grille
 
-Grille=creationGrille(nbcol,nblig)
 
 def uniqueAnimaux(vars: List[int]) -> List[List[int]]:
     l=[vars]
@@ -33,7 +32,6 @@ def uniqueAnimaux(vars: List[int]) -> List[List[int]]:
         l.append([-a,-b])
     return l
 
-print(uniqueAnimaux([1,1,3]))
 
 def uniqueTerrain(vars: List[int]) -> List[List[int]]:
     l=[vars]
@@ -41,7 +39,6 @@ def uniqueTerrain(vars: List[int]) -> List[List[int]]:
         l.append([-a,-b])
     return l
 
-print(uniqueTerrain([1,1,2]))
 
 def terrainAnimaux(vars: List[int]) -> List[List[int]]:
     l=[]
@@ -53,13 +50,24 @@ def terrainAnimaux(vars: List[int]) -> List[List[int]]:
         l=vars 
     return l
 
-print(terrainAnimaux([1,1,2,2]))
 
 def compteurs(Grille: List[List[int]], nbterre:int, nbterremax:int, nbmer:int, nbmermax:int, nbrequins:int, nbrequinsmax:int, nbcrocos:int, nbcrocosmax:int, nbtigres:int, nbtigresmax:int):
     l=[]
-    if nbterre==nbterremax:
-        for cell in Grille:
             
+            
+
+def main():
+    Grille=creationGrille(nbcol,nblig)
+    print(uniqueAnimaux([1,1,3]))
+    print(uniqueTerrain([1,1,2]))
+    print(terrainAnimaux([1,1,2,2]))
+
+if __name__ == "__main__":
+    main()
+
+
+
+
 
 """def create_cell_constraints(Grille: List[List[int]]) -> List[List[int]]:
     l=[]
