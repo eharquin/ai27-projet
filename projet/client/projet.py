@@ -9,7 +9,7 @@ Created on Thu Jun 10 12:27:31 2021
    mer=1 terre=2"""
 
 from typing import List, Tuple, Dict
-from crocomine_client import CrocomineClient
+"""from crocomine_client import CrocomineClient"""
 import itertools
 import subprocess
 
@@ -41,16 +41,17 @@ def creationGrillePossibilités(nbcol: int, nblig: int):
         for j in range(nbcol):
             for t in range(2):
                 for z in range (4):
-                    grille.append([i+1,j+1,t+1,z+1])
+                    if not ((t==0 and z==1) or (t==1 and z==0)):
+                        grille.append([i+1,j+1,t+1,z+1])
                     
     return grille
 
 def PassageTableauDico(Tab: List[List[int]]):
     dico={}
-    i=1
+    i=0
     for cell in Tab:
-        dico[i]=cell
         i=i+1
+        dico[i]=cell        
     return dico
 
 
@@ -61,19 +62,18 @@ def unique(vars: List[int]) -> List[List[int]]:
         l.append([-a,-b])
     return l
 
-def unique_generator(vars: Dict[List[int]]):
+def unique_generator(vars: Dict[int, List[int]]):
     li=[]
     l=[]
-    for i in range(1, len(vars)):
+    for i in range(1, len(vars)+1):
         l.append(i)
-        if i%8==0:
-            li = unique(l)
+        if i%6==0:
+            li.append(unique(l))
             l=[]
+    return li
 
 
-
-
-def terrainAnimaux(vars: List[int]) -> List[List[int]]:
+"""def terrainAnimaux(vars: List[int]) -> List[List[int]]:
     l=[]
     if vars[3]==1:
         l=[vars[0],vars[1],1,-vars[3]]
@@ -94,35 +94,46 @@ def compteurs(GrilleV: List[List[int]], nbterre:int, nbterremax:int, nbmer:int, 
                 if cell[2]==-1:
                     cell[2]=2
         return GrilleV
-                
+                  """
+
+def clauses_to_dimacs(clauses: List[List[int]], nb_vars: int) -> str:
+    p="p cnf "+str(nb_vars)
+    inter=""
+    inter2=""
+    i=0
+    for serie in clauses:
+        for clause in serie:
+           i=i+1
+           inter=""
+           for variable in clause:
+               inter=inter+" "+str(variable)
+           inter2=inter2 + "\n" + inter + " 0"   
+    p=p+" "+str(i)+inter2+" \n"
+    return p
+
+
+
+def write_dimacs_file(dimacs: str, filename: str):
+    with open(filename, "w", newline="") as cnf:
+        cnf.write(dimacs)
             
 
 def main():
-    print(unique((1,2,3,4,5,6,7,8)))
     GrilleVraie=creationGrilleVierge(nbcol,nblig)
     print(GrilleVraie)
     GrillePossibilités=creationGrillePossibilités(nbcol, nblig)
-    """print(GrillePossibilités)
-    print(uniqueAnimaux([1,1,3]))
-    print(uniqueTerrain([1,1,2]))
-    print(terrainAnimaux([1,1,2,2]))"""
-    GrilleVraie=compteurs(GrilleVraie, nbterre, nbterremax, nbmer, nbmermax, nbrequins, nbrequinsmax, nbcrocos, nbcrocosmax, nbtigres, nbtigresmax)
+    print(GrillePossibilités)
     
-    print(PassageTableauDico(GrilleVraie))
+    """GrilleVraie=compteurs(GrilleVraie, nbterre, nbterremax, nbmer, nbmermax, nbrequins, nbrequinsmax, nbcrocos, nbcrocosmax, nbtigres, nbtigresmax)
+    """
+    Dico=PassageTableauDico(GrillePossibilités)
+    
+    unique=unique_generator(Dico)
+    print(unique)
+    
+    
+    
+    write_dimacs_file(clauses_to_dimacs(unique,nbcol*nblig*6), "demineur")
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-"""def create_cell_constraints(Grille: List[List[int]]) -> List[List[int]]:
-    l=[]
-    for cell in Grille:
-        l.append(uniqueAnimaux([cell[0],cell[1],cell[3]]))
-        l.append(uniqueAnimaux([cell[0],cell[1],cell[2]]))
-    return l
-
-print(create_cell_constraints(Grille))"""
-      
