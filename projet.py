@@ -22,7 +22,7 @@ def creationGrille(nbcol: int, nblig: int):
             for t in range(2):
                 for z in range (4):
                     grille.append([i+1,j+1,t+1,z+1])
-                    
+
     return grille
 
 
