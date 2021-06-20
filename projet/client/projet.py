@@ -13,8 +13,8 @@ from typing import List, Tuple, Dict
 import itertools
 import subprocess
 
-nbcol=3
-nblig=3
+nbcol=15
+nblig=15
 
 nbterre=3
 nbterremax=3
@@ -116,6 +116,22 @@ def clauses_to_dimacs(clauses: List[List[int]], nb_vars: int) -> str:
 def write_dimacs_file(dimacs: str, filename: str):
     with open(filename, "w", newline="") as cnf:
         cnf.write(dimacs)
+        
+def exec_gophersat(
+    filename: str, cmd: str = "gophersat", encoding: str = "utf8"
+) -> Tuple[bool, List[int]]:
+    result = subprocess.run(
+        [cmd, filename], capture_output=True, check=True, encoding=encoding
+    )
+    string = str(result.stdout)
+    lines = string.splitlines()
+
+    if lines[1] != "s SATISFIABLE":
+        return False, []
+
+    model = lines[2][2:].split(" ")
+
+    return True, [int(x) for x in model]
             
 
 def main():
@@ -133,7 +149,8 @@ def main():
     
     
     
-    write_dimacs_file(clauses_to_dimacs(unique,nbcol*nblig*6), "demineur")
+    write_dimacs_file(clauses_to_dimacs(unique,nbcol*nblig*6), "demineur.cnf")
+    exec_gophersat("demineur")
 
 if __name__ == "__main__":
     main()
