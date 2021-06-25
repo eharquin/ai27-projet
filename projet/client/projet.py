@@ -9,7 +9,8 @@ Created on Thu Jun 10 12:27:31 2021
    mer=1 terre=2"""
 
 from typing import List, Tuple, Dict
-"""from crocomine_client import CrocomineClient"""
+from pprint import pprint
+from crocomine_client import CrocomineClient
 import itertools
 import subprocess
 
@@ -108,7 +109,7 @@ def clauses_to_dimacs(clauses: List[List[int]], nb_vars: int) -> str:
            for variable in clause:
                inter=inter+" "+str(variable)
            inter2=inter2 + "\n" + inter + " 0"   
-    p=p+" "+str(i)+inter2+" \n"
+    p=p+" "+str(i)+inter2+"\n"
     return p
 
 
@@ -118,13 +119,15 @@ def write_dimacs_file(dimacs: str, filename: str):
         cnf.write(dimacs)
         
 def exec_gophersat(
-    filename: str, cmd: str = "gophersat", encoding: str = "utf8"
+    filename: str, cmd: str = "./gophersat", encoding: str = "utf8"
 ) -> Tuple[bool, List[int]]:
     result = subprocess.run(
         [cmd, filename], capture_output=True, check=True, encoding=encoding
     )
     string = str(result.stdout)
     lines = string.splitlines()
+
+    print(result)
 
     if lines[1] != "s SATISFIABLE":
         return False, []
@@ -135,22 +138,36 @@ def exec_gophersat(
             
 
 def main():
-    GrilleVraie=creationGrilleVierge(nbcol,nblig)
-    print(GrilleVraie)
-    GrillePossibilités=creationGrillePossibilités(nbcol, nblig)
-    print(GrillePossibilités)
+    server = "http://localhost:8000"
+    group = "Groupe "
+    members = "Benjamin et Enzo"
+    croco = CrocomineClient(server, group, members)
+
+    status, msg, grid_infos = croco.new_grid()
+    print(status, msg)
+    pprint(grid_infos)
+
+    
+
+
+
+
+    GrilleVraie=creationGrilleVierge(grid_infos.n,grid_infos.m)
+    #print(GrilleVraie)
+    GrillePossibilités=creationGrillePossibilités(grid_infos.n,grid_infos.m)
+    #print(GrillePossibilités)
     
     """GrilleVraie=compteurs(GrilleVraie, nbterre, nbterremax, nbmer, nbmermax, nbrequins, nbrequinsmax, nbcrocos, nbcrocosmax, nbtigres, nbtigresmax)
     """
     Dico=PassageTableauDico(GrillePossibilités)
     
     unique=unique_generator(Dico)
-    print(unique)
+    #print(unique)
     
     
     
     write_dimacs_file(clauses_to_dimacs(unique,nbcol*nblig*6), "demineur.cnf")
-    exec_gophersat("demineur")
+    exec_gophersat("demineur.cnf")
 
 if __name__ == "__main__":
     main()
