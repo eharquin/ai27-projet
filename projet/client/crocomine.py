@@ -26,8 +26,14 @@ GUESS = 1
 CHORD = 2
 
 
-
-
+"""Pour étudier en local:
+    -Créer un dictionnaire
+    -L'alimenter avec les infos qu'on nous renvoie (ATTENTION: quand on ajoute une info sur une case, bien donner une clé correspondant a la position de la case dans la grille Exemple: toute info sur la case 1 doit avoir une clé dans l'intervalle 1-6, permet d'éviter de fouiller tout le dico a chq fois, on regardera que 6 valeurs a la place):
+        -Qd l'info est sûre (la case sur laquelle on fait une action) (la case 1 vaut (0,0,1,1) on ajoute 1 seule fois (vérifier a chaque fois que la variable n'existe pas deja dans le dico, on était pas sur avant de la valeur de la case mais mtn on l'est)'
+        -Qd l'info n'est pas sûre (les cases autour de celle sur laquelle on a fait une action), on met toutes les possibilités dedans (si la case 1 est de type eau, case 1 peut avoir rien, shark, croco dessus, si on nous dit 2 tigres autour avec 5 cases de terre, exactement 2 parmis 5)
+    -Compter les modèles
+    -Je sais pas trop comment inclure les discover sur des cases random, si le meilleur coup qu'on a trouvé à moins de ??? de modèles, on discover n'imp où sur la carte"""
+    
 def createPossibilityDict(line: int, column: int) -> Dict[int, List[int]]:
     dict={}
     dict[0] = {}
