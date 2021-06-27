@@ -65,7 +65,26 @@ def createLocalDict(grid: List[List[Dict]]) -> Dict[int, List[int]]:
 
 
     return local_dict
+"""
 
+def createLocalDict(grid: List[List[Dict]], shark_count: int, croco_count: int, tiger_count: int, shark_counter: int, croco_counter: int, tiger_counter: int) -> Dict[int, List[int]]:
+
+    local_dict = {}
+    local_dict[0] = {}
+    counter = 1
+    for line in grid:
+        for column in line:
+            if(column["field"] != -1):
+                for t in range(MAX_TERRAIN):
+                    for a in range(MAX_ANIMAL):
+                        if((t != SEA or a != TIGER) and (t != LAND or a != SHARK)):
+                            if((a == TIGER and tiger_count != tiger_counter) or (a == SHARK and shark_count != shark_counter) or (a == CROCODILE and croco_count != croco_counter)):
+                                local_dict[counter] = [column["pos"][0], column["pos"][1], t, a]
+                                counter += 1    
+
+
+    return local_dict
+"""
 def local_dict_to_kb(local_dict: Dict[int, List[int]]) -> List[List[int]]:
     li=[]
     l=[]
@@ -76,6 +95,7 @@ def local_dict_to_kb(local_dict: Dict[int, List[int]]) -> List[List[int]]:
                 li.append(clause)
             l=[]
     return li
+
 
 
 def grid_to_clause(local_dict: Dict[int, List[int]], grid: List[List[Dict]]) -> List[List[int]]:
@@ -92,6 +112,24 @@ def grid_to_clause(local_dict: Dict[int, List[int]], grid: List[List[Dict]]) -> 
             li += diff_list(li, exactly_n(l, 1))
 
     return li
+
+
+def counter_to_clause(dict: Dict, grid: List[List[Dict]], shark_count: int, croco_count: int, tiger_count: int, shark_counter: int, croco_counter: int, tiger_counter: int) -> List[List[int]]:
+    li = []
+
+    for a in range(1, len(dict)):
+        if((dict[a][3] == TIGER and tiger_count == tiger_counter) and grid[dict[a][0]][dict[a][1]]["animal"] == -1):
+            li += [[-a]]
+
+        if((dict[a][3] == SHARK and shark_count == shark_counter) and grid[dict[a][0]][dict[a][1]]["animal"] == -1):
+            li += [[-a]]
+
+        if((dict[a][3] == CROCODILE and croco_count == croco_counter) and grid[dict[a][0]][dict[a][1]]["animal"] == -1):
+            li += [[-a]]
+
+    return li
+             
+            
 
 def prox_count_to_clause(dict: Dict, grid: List[List[Dict]], m: int, n: int) -> List[List[int]]:
     li = []
@@ -367,7 +405,6 @@ def counter_info_to_clauses(tiger_count: int, shark_count: int, croco_count: int
             case_croco.append(i)
 
 
-    print(case_shark)
 
     
     
@@ -429,7 +466,6 @@ def exec_gophersat(filename: str, option: str = "", cmd: str = "./gophersat", en
     string = str(result.stdout)
     lines = string.splitlines()
 
-    print(result)
 
     if lines[1] != "s SATISFIABLE":
         return False, []
@@ -521,10 +557,7 @@ def main():
             #pprint(knowledge_base)
 
 
-            print("discover en (0,0)")
             status, msg, infos = croco.discover(start[0], start[1])
-            print(status, msg)
-            print(infos)
 
 
             if(infos):
@@ -562,33 +595,26 @@ def main():
                 #on remplit notre local Kb avec tout les modèles possible pour les cases déja découverte, ou adjacentes
                 local_dict = createLocalDict(grid)
 
-                pprint(local_dict)
 
                 #on ajoute dans la local les infos qu'on a, on élimine  certaine possibilité avec des unique, exactly_n
                 local_kb = local_dict_to_kb(local_dict)
                 
-                print("local_dict_to_kb")
-                pprint(local_kb)
 
                 
                 grid_clauses = grid_to_clause(local_dict, grid)
                 local_kb += diff_list(local_kb, grid_clauses)
                 
-                print("grid_to_clause")
-                pprint(grid_clauses)
+
+                counter_clauses = counter_to_clause(local_dict, grid, shark_count, croco_count, tiger_count, shark_counter, croco_counter, tiger_counter)
+                local_kb += diff_list(local_kb, counter_clauses)
 
 
                 prox_clauses = prox_count_to_clause(local_dict, grid, m, n)
-
                 local_kb += diff_list(local_kb, prox_clauses)
 
-                print("prox_count_to_clause")
-                pprint(prox_clauses)
 
 
                 #pprint(local_kb)
-
-
 
                 #on parcours la grid, pour toutes les carte pas encore découverte et ou on connait le type de terrain on ajoute l'inverse
                 #de chaque varable propo possible une a à une a la kb, on test avec gophersat, et on retient le la possibilité qui renvoie le moins de modèle.
@@ -602,10 +628,7 @@ def main():
                         if(min == 0):
                             break
                         if(column["field"] != -1 and column["animal"] == -1):
-                            pprint(grid)
-                            print(column["field"], column["animal"])
                             pos = column["pos"]
-                            pprint(column["pos"])
                             l = []
 
                             for i in range(1, len(local_dict)):
@@ -614,7 +637,6 @@ def main():
 
                             temp_kb
                             
-                            print(l)
                             for possibility in l:
                                 
                                 write_dimacs_file(clauses_to_dimacs(temp_kb + [[-possibility]],len(local_dict)-1), "test.cnf")
@@ -627,7 +649,6 @@ def main():
                                 if(min == 0):
                                     break
 
-                print(min, value)
                 
                 i = local_dict[value][0]
                 j = local_dict[value][1]
@@ -635,14 +656,17 @@ def main():
                 if(local_dict[value][3] == TIGER):
                     choice = GUESS
                     animal = "T"
+                    tiger_counter += 1
 
                 if(local_dict[value][3] == SHARK):
                     choice = GUESS
                     animal = "S"
+                    shark_counter += 1
 
                 if(local_dict[value][3] == CROCODILE):
                     choice = GUESS
                     animal = "C"
+                    croco_counter += 1
     
                 if choice == DISCOVER:
                     print("discover en ("+str(i)+","+str(j)+")")
@@ -665,8 +689,6 @@ def main():
                 elif choice == CHORD:
                     status, msg, infos = croco.chord(i, j)
 
-                print(status, msg)
-                print(infos)
 
 
                 if(infos):
